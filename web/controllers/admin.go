@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/kataras/iris"
-	"github.com/kataras/iris/v12/mvc"
+	"github.com/kataras/iris/mvc"
 	"github.com/wangjian890523/superstar/models"
 	"github.com/wangjian890523/superstar/services"
 )
@@ -20,7 +20,7 @@ func (c *AdminController) Get() mvc.Result {
 	return mvc.View{
 		Name: "admin/index.html",
 		Data: iris.Map{
-			"Title":    "球星库",
+			"Title":    "管理后台",
 			"Datalist": datalist,
 		},
 		Layout: "admin/layout.html",
@@ -30,17 +30,22 @@ func (c *AdminController) Get() mvc.Result {
 func (c *AdminController) GetEdit() mvc.Result {
 	id, err := c.Ctx.URLParamInt("id")
 	var data *models.StarInfo
-	if err != nil {
+	if err == nil {
 		data = c.Service.Get(id)
+	} else {
+		data = &models.StarInfo{
+			Id: 0,
+		}
 	}
-
+	//fmt.Println(id, data)
+	// set the model and render the view template.
 	return mvc.View{
-		Name: "admin/index.html",
+		Name: "admin/edit.html",
 		Data: iris.Map{
-			"Title":    "球星库",
-			"Datalist": data,
+			"Title": "管理后台",
+			"info":  data,
 		},
-		Layout: "admin/layout.html",
+		Layout: "admin/layout.html", // 不要跟前端的layout混用
 	}
 }
 
@@ -52,8 +57,9 @@ func (c *AdminController) PostSave() mvc.Result {
 	}
 	if info.Id > 0 {
 		info.SysUpdated = int(time.Now().Unix())
-		c.Service.Update(&info,
-			[]string{"name_zh", "name_en", "avatar", "birthday", "height", "weight", "club", "jersy", "country", "moreinfo"})
+		c.Service.Update(&info, []string{"name_zh", "name_en", "avatar",
+			"birthday", "height", "weight", "club", "jersy", "coutry",
+			"birthaddress", "feature", "moreinfo", "sys_updated"})
 	} else {
 		info.SysCreated = int(time.Now().Unix())
 		c.Service.Create(&info)
@@ -66,7 +72,7 @@ func (c *AdminController) PostSave() mvc.Result {
 
 func (c *AdminController) GetDelete() mvc.Result {
 	id, err := c.Ctx.URLParamInt("id")
-	if err != nil {
+	if err == nil {
 		c.Service.Delete(id)
 	}
 	return mvc.Response{

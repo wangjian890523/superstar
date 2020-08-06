@@ -29,17 +29,25 @@ func InstanceMaster() *xorm.Engine {
 	}
 
 	c := conf.MasterDbConf
-	driveSource := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8", c.User,
-		c.Pwd, c.Host, c.Port, c.DbName)
+	driveSource := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8", 
+	c.User, c.Pwd, c.Host, c.Port, c.DbName)
 
-	engine, err := xorm.NewEngine(conf.DriveName, driveSource)
+	fmt.Println("db:", driveSource)
+	engine, err := xorm.NewEngine(conf.DriverName, driveSource)
 	if err != nil {
 		log.Fatal("dbhelper.DbInstanceMaster error=", err)
 		return nil
-	} else {
-		masterEngine = engine
-		return masterEngine
 	}
+
+	engine.ShowSQL(false)
+	engine.SetTZLocation(conf.SysTimeLocation)
+
+	cacher := xorm.NewLRUCacher(xorm.NewMemoryStore(), 1000)
+	engine.SetDefaultCacher(cacher)
+
+	masterEngine = engine
+	return masterEngine
+
 }
 
 func InstanceSlave() *xorm.Engine {
@@ -59,12 +67,14 @@ func InstanceSlave() *xorm.Engine {
 	driveSource := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8", c.User,
 		c.Pwd, c.Host, c.Port, c.DbName)
 
-	engine, err := xorm.NewEngine(conf.DriveName, driveSource)
+	engine, err := xorm.NewEngine(conf.DriverName, driveSource)
 	if err != nil {
 		log.Fatal("dbhelper.DbInstanceSlave error=", err)
 		return nil
-	} else {
-		slaveEngine = engine
-		return slaveEngine
 	}
+
+	engine.SetTZLocation(conf.SysTimeLocation)
+	slaveEngine = engine
+	return slaveEngine
+
 }

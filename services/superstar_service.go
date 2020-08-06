@@ -9,7 +9,7 @@ import (
 type SuperstarService interface {
 	GetAll() []models.StarInfo
 	Get(id int) *models.StarInfo
-	Delete(id int) bool
+	Delete(id int) error
 	Update(user *models.StarInfo, columns []string) error
 	Create(user *models.StarInfo) error
 
@@ -20,7 +20,7 @@ type superstarService struct {
 	dao *dao.SuperstarDao
 }
 
-func NewSuperstarService() *superstarService {
+func NewSuperstarService() SuperstarService {
 	return &superstarService{
 		dao: dao.NewSuperstarDao(datasource.InstanceMaster()),
 	}

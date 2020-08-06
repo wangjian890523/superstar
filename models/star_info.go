@@ -1,6 +1,5 @@
-/*
-
-REATE TABLE `star_info` (
+/**
+CREATE TABLE `star_info` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `name_zh` varchar(50) NOT NULL DEFAULT '' COMMENT '中文名',
   `name_en` varchar(50) NOT NULL DEFAULT '' COMMENT '英文名',

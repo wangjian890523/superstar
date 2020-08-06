@@ -1,8 +1,12 @@
 package controllers
 
 import (
+	"log"
+
 	"github.com/kataras/iris"
-	"github.com/kataras/iris/v12/mvc"
+	"github.com/kataras/iris/mvc"
+	"github.com/wangjian890523/superstar/datasource"
+	"github.com/wangjian890523/superstar/models"
 	"github.com/wangjian890523/superstar/services"
 )
 
@@ -33,7 +37,7 @@ func (c *IndexController) GetBy(id int) mvc.Result {
 		Name: "info.html",
 		Data: iris.Map{
 			"Title": "球星库",
-			"Data":  data,
+			"info":  data,
 		},
 	}
 
@@ -43,10 +47,24 @@ func (c *IndexController) GetSearch() mvc.Result {
 	country := c.Ctx.URLParam("country")
 	datalist := c.Service.Search(country)
 	return mvc.View{
-		Name: "info.html",
+		Name: "index.html",
 		Data: iris.Map{
-			"Title": "球星库",
-			"Data":  datalist,
+			"Title":    "球星库",
+			"Datalist": datalist,
 		},
+	}
+}
+
+// 集群多服务器的时候，才用得上这个接口
+// 性能优化的时候才考虑，加上本机的SQL缓存
+// http://localhost:8080/clearcache
+func (c *IndexController) GetClearcache() mvc.Result {
+	err := datasource.InstanceMaster().ClearCache(&models.StarInfo{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	// set the model and render the view template.
+	return mvc.Response{
+		Text: "xorm缓存清除成功",
 	}
 }
